@@ -481,7 +481,7 @@ MonoBehaviour:
   width: 1
   height: 1
   depth: 1
-  movementSpeed: 5
+  movementSpeed: 10
   playerHealth: 100
   gravity: 9.8
   jumpForce: 10
@@ -502,7 +502,7 @@ MonoBehaviour:
   obstacleSizeMin: 1
   obstacleSizeMax: 3
   goalSize: {x: 2, y: 2, z: 2}
-  goalPosition: {x: 50, y: -18, z: 0}
+  goalPosition: {x: 50, y: -19, z: 0}
 --- !u!4 &1548962866
 Transform:
   m_ObjectHideFlags: 0
