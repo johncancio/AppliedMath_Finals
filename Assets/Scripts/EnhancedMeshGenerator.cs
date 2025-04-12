@@ -5,10 +5,17 @@ using Matrix4x4 = UnityEngine.Matrix4x4;
 using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
+using UnityEngine.UI;
+using TMPro;
+
 
 // Enhanced MeshGenerator with collision, player control, and camera following
 public class EnhancedMeshGenerator : MonoBehaviour
 {
+    public Slider healthSlider;
+    public TMP_Text healthText; // Optional
+
+
     public Material material;
     public int instanceCount = 100;
     private Mesh cubeMesh;
@@ -96,9 +103,25 @@ public class EnhancedMeshGenerator : MonoBehaviour
         // Generate goal
         GenerateGoal();
 
+        if (healthSlider != null)
+            healthSlider.value = playerHealth;
+
+        if (healthText != null)
+            healthText.text = playerHealth.ToString();
+
         Debug.Log($"Player Collider ID on Start: {playerID}"); // Debugging
         Debug.Log($"Goal Collider ID on Start: {goalColliderID}");   // Debugging
     }
+
+    void UpdateHealthUI()
+    {
+        if (healthSlider != null)
+            healthSlider.value = playerHealth;
+
+        if (healthText != null)
+            healthText.text = playerHealth.ToString();
+    }
+
 
     void SetupCamera()
     {
@@ -508,6 +531,9 @@ public class EnhancedMeshGenerator : MonoBehaviour
         lastDamageTime = Time.time;
 
         Debug.Log($"Player took {amount} damage! Remaining health: {playerHealth}");
+
+        // Update the health UI
+        UpdateHealthUI();
 
         if (playerHealth <= 0)
         {
