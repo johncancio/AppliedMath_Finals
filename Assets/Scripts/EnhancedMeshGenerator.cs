@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -51,7 +52,7 @@ public class EnhancedMeshGenerator : MonoBehaviour
     public float groundDepth = 200f;
 
     // Enemy settings
-    public int enemyCount = 10;
+    public int enemyCount = 4;
     public float enemySpeed = 2f;
     public Vector2 enemyMovementRange = new Vector2(-5f, 5f);
 
@@ -199,25 +200,28 @@ public class EnhancedMeshGenerator : MonoBehaviour
     
     void CreateGround()
     {
-        // Create a large ground plane
-        Vector3 groundPosition = new Vector3(0, groundY, constantZPosition);
-        Vector3 groundScale = new Vector3(groundWidth, 1f, groundDepth);
-        Quaternion groundRotation = Quaternion.identity;
-        
-        // Register with collision system - use actual dimensions
-        int groundID = CollisionManager.Instance.RegisterCollider(
-            groundPosition, 
-            new Vector3(groundWidth, 1f, groundDepth), 
-            false);
-        
-        // Create transformation matrix
-        Matrix4x4 groundMatrix = Matrix4x4.TRS(groundPosition, groundRotation, groundScale);
-        matrices.Add(groundMatrix);
-        colliderIds.Add(groundID);
-        
-        // Update the matrix in collision manager
-        CollisionManager.Instance.UpdateMatrix(groundID, groundMatrix);
+        float tileWidth = 10f; // Size of each ground tile
+        int tileCount = Mathf.CeilToInt((maxX - minX) / tileWidth);
+
+        for (int i = 0; i < tileCount; i++)
+        {
+            float tileX = minX + i * tileWidth + tileWidth / 2f; // Center of tile
+            Vector3 groundPosition = new Vector3(tileX, groundY, constantZPosition);
+            Vector3 groundScale = new Vector3(tileWidth, 1f, groundDepth);
+            Quaternion groundRotation = Quaternion.identity;
+
+            int groundID = CollisionManager.Instance.RegisterCollider(
+                groundPosition,
+                new Vector3(groundScale.x, groundScale.y, groundScale.z),
+                false);
+
+            Matrix4x4 groundMatrix = Matrix4x4.TRS(groundPosition, groundRotation, groundScale);
+            matrices.Add(groundMatrix);
+            colliderIds.Add(groundID);
+            CollisionManager.Instance.UpdateMatrix(groundID, groundMatrix);
+        }
     }
+
     
     void GenerateRandomBoxes()
     {
@@ -263,11 +267,15 @@ public class EnhancedMeshGenerator : MonoBehaviour
         {
             jumpRequested = true;
         }
-        UpdatePlayer();
         RenderBoxes();
+    }
+
+    private void FixedUpdate()
+    {
+        UpdatePlayer();
         UpdateEnemies();
     }
-    
+
     void UpdatePlayer()
     {
         if (playerID == -1) return;
@@ -410,36 +418,38 @@ public class EnhancedMeshGenerator : MonoBehaviour
         CollisionManager.Instance.UpdateMatrix(id, boxMatrix);
     }
 
-    public void GenerateEnemies()
+    void GenerateEnemies()
     {
         for (int i = 0; i < enemyCount; i++)
         {
             Vector3 position = new Vector3(
                 Random.Range(minX, maxX),
-                Random.Range(minY, maxY),
+                groundY + 1f, // Slightly above ground
                 constantZPosition
             );
 
-            Vector3 scale = new Vector3(1f, 1f, 1f); // standard size
-            Quaternion rotation = Quaternion.identity;
+            Vector3 direction = new Vector3(
+                Random.Range(enemyMovementRange.x, enemyMovementRange.y),
+                0f,
+                0f
+            ).normalized;
 
-            int id = CollisionManager.Instance.RegisterCollider(
+            int enemyID = CollisionManager.Instance.RegisterCollider(
                 position,
-                new Vector3(width * scale.x, height * scale.y, depth * scale.z),
-                false
-            );
+                new Vector3(width, height, depth),
+                false);
 
-            Matrix4x4 enemyMatrix = Matrix4x4.TRS(position, rotation, scale);
+            Matrix4x4 enemyMatrix = Matrix4x4.TRS(position, Quaternion.identity, Vector3.one);
             matrices.Add(enemyMatrix);
-            colliderIds.Add(id);
+            colliderIds.Add(enemyID);
+            CollisionManager.Instance.UpdateMatrix(enemyID, enemyMatrix);
 
-            CollisionManager.Instance.UpdateMatrix(id, enemyMatrix);
-
-            enemyIDs.Add(id);
             enemyPositions.Add(position);
-            enemyDirections.Add(Vector3.right); // start moving right
+            enemyDirections.Add(direction);
+            enemyIDs.Add(enemyID);
         }
     }
+
 
     void ApplyDamage(int amount)
     {
