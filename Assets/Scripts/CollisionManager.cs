@@ -109,7 +109,7 @@ public class CollisionManager : MonoBehaviour
         }
         return collided;
     }
-
+    
     public bool CheckCollisionBetween(int id1, int id2)
     {
         if (_colliders.TryGetValue(id1, out AABBBounds a) && _colliders.TryGetValue(id2, out AABBBounds b))

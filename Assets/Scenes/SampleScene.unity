@@ -499,7 +499,6 @@ MonoBehaviour:
   enemySpeed: 2
   enemyMovementRange: {x: -5, y: 5}
   obstacleCount: 4
-  instakillObstacleCount: 2
   obstacleSizeMin: 1
   obstacleSizeMax: 3
   goalSize: {x: 2, y: 2, z: 2}
