@@ -60,6 +60,18 @@ public class EnhancedMeshGenerator : MonoBehaviour
     private List<Vector3> enemyDirections = new List<Vector3>();
     private List<int> enemyIDs = new List<int>();
 
+    // Obstacle Settings
+    public int obstacleCount = 4;
+    public int instakillObstacleCount = 2;
+    public float obstacleSizeMin = 1f;
+    public float obstacleSizeMax = 3f;
+
+    public Vector3 goalSize = new Vector3(2f, 2f, 2f);
+    public Vector3 goalPosition = new Vector3(200f, 1f, 0f);
+    private int goalColliderID;
+
+    private List<int> instakillIDs = new List<int>();
+    private List<int> obstacleIDs = new List<int>();
 
     void Start()
     {
@@ -80,6 +92,13 @@ public class EnhancedMeshGenerator : MonoBehaviour
 
         // Create enemies
         GenerateEnemies();
+        
+        // Generate obstacles
+        GenerateObstacles();
+        GenerateInstakillObstacles();
+        
+        // Generate goal
+        GenerateGoal();
     }
     
     void SetupCamera()
@@ -506,5 +525,62 @@ public class EnhancedMeshGenerator : MonoBehaviour
                 ApplyDamage(10); // Damage amount
             }
         }
+    }
+    
+    void GenerateObstacles()
+    {
+        for (int i = 0; i < obstacleCount; i++)
+        {
+            float x = Random.Range(minX, maxX);
+            Vector3 position = new Vector3(x, groundY + height / 2f, constantZPosition); // Half-height above ground
+
+            Vector3 scale = Vector3.one * Random.Range(obstacleSizeMin, obstacleSizeMax);
+            Quaternion rotation = Quaternion.identity;
+
+            int id = CollisionManager.Instance.RegisterCollider(
+                position,
+                new Vector3(width * scale.x, height * scale.y, depth * scale.z),
+                false);
+
+            Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, scale);
+            matrices.Add(matrix);
+            colliderIds.Add(id);
+            obstacleIDs.Add(id);
+            CollisionManager.Instance.UpdateMatrix(id, matrix);
+        }
+    }
+    
+    void GenerateInstakillObstacles()
+    {
+        for (int i = 0; i < instakillObstacleCount; i++)
+        {
+            float x = Random.Range(minX, maxX);
+            Vector3 position = new Vector3(x, groundY + height / 2f, constantZPosition); // Half-height above ground
+
+            Vector3 scale = Vector3.one * Random.Range(obstacleSizeMin, obstacleSizeMax);
+            Quaternion rotation = Quaternion.identity;
+
+            int id = CollisionManager.Instance.RegisterCollider(
+                position,
+                new Vector3(width * scale.x, height * scale.y, depth * scale.z),
+                false);
+
+            Matrix4x4 matrix = Matrix4x4.TRS(position, rotation, scale);
+            matrices.Add(matrix);
+            colliderIds.Add(id);
+            instakillIDs.Add(id);
+            CollisionManager.Instance.UpdateMatrix(id, matrix);
+        }
+    }
+
+    void GenerateGoal()
+    {
+        Vector3 position = goalPosition;
+        int id = CollisionManager.Instance.RegisterCollider(position, goalSize);
+        Matrix4x4 matrix = Matrix4x4.TRS(position, Quaternion.identity, goalSize);
+        matrices.Add(matrix);
+        colliderIds.Add(id);
+        CollisionManager.Instance.UpdateMatrix(id, matrix);
+        goalColliderID = id;
     }
 }
