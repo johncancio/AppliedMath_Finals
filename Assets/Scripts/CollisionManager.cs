@@ -110,6 +110,16 @@ public class CollisionManager : MonoBehaviour
         return collided;
     }
 
+    public bool CheckCollisionBetween(int id1, int id2)
+    {
+        if (_colliders.TryGetValue(id1, out AABBBounds a) && _colliders.TryGetValue(id2, out AABBBounds b))
+        {
+            return a.Intersects(b);
+        }
+        return false;
+    }
+
+
     public Matrix4x4 GetMatrix(int id)
     {
         if (_colliders.TryGetValue(id, out AABBBounds bounds))

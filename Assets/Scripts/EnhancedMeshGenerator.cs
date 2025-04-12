@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using Matrix4x4 = UnityEngine.Matrix4x4;
 using Quaternion = UnityEngine.Quaternion;
@@ -46,6 +47,16 @@ public class EnhancedMeshGenerator : MonoBehaviour
     public float groundWidth = 200f;
     public float groundDepth = 200f;
 
+    // Enemy settings
+    public int enemyCount = 10;
+    public float enemySpeed = 2f;
+    public Vector2 enemyMovementRange = new Vector2(-5f, 5f);
+
+    private List<Vector3> enemyPositions = new List<Vector3>();
+    private List<Vector3> enemyDirections = new List<Vector3>();
+    private List<int> enemyIDs = new List<int>();
+
+
     void Start()
     {
         // Find or create camera if not assigned
@@ -62,6 +73,9 @@ public class EnhancedMeshGenerator : MonoBehaviour
         
         // Set up random boxes
         GenerateRandomBoxes();
+
+        // Create enemies
+        GenerateEnemies();
     }
     
     void SetupCamera()
@@ -248,6 +262,7 @@ public class EnhancedMeshGenerator : MonoBehaviour
         }
         UpdatePlayer();
         RenderBoxes();
+        UpdateEnemies();
     }
     
     void UpdatePlayer()
@@ -390,5 +405,77 @@ public class EnhancedMeshGenerator : MonoBehaviour
         colliderIds.Add(id);
         
         CollisionManager.Instance.UpdateMatrix(id, boxMatrix);
+    }
+
+    public void GenerateEnemies()
+    {
+        for (int i = 0; i < enemyCount; i++)
+        {
+            Vector3 position = new Vector3(
+                Random.Range(minX, maxX),
+                Random.Range(minY, maxY),
+                constantZPosition
+            );
+
+            Vector3 scale = new Vector3(1f, 1f, 1f); // standard size
+            Quaternion rotation = Quaternion.identity;
+
+            int id = CollisionManager.Instance.RegisterCollider(
+                position,
+                new Vector3(width * scale.x, height * scale.y, depth * scale.z),
+                false
+            );
+
+            Matrix4x4 enemyMatrix = Matrix4x4.TRS(position, rotation, scale);
+            matrices.Add(enemyMatrix);
+            colliderIds.Add(id);
+
+            CollisionManager.Instance.UpdateMatrix(id, enemyMatrix);
+
+            enemyIDs.Add(id);
+            enemyPositions.Add(position);
+            enemyDirections.Add(Vector3.right); // start moving right
+        }
+    }
+
+    void UpdateEnemies()
+    {
+        for (int i = 0; i < enemyIDs.Count; i++)
+        {
+            Vector3 pos = enemyPositions[i];
+            Vector3 dir = enemyDirections[i];
+
+            // Move enemy
+            pos += dir * enemySpeed * Time.deltaTime;
+
+            // Reverse direction if out of range
+            if (pos.x < minX || pos.x > maxX)
+            {
+                dir = -dir;
+            }
+
+            // Make enemy stand on the ground
+            pos.y = groundY + height * 1f;
+
+            enemyPositions[i] = pos;
+            enemyDirections[i] = dir;
+
+            // Update matrix and collider
+            int id = enemyIDs[i];
+            int matrixIndex = colliderIds.IndexOf(id);
+
+            Matrix4x4 newMatrix = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);
+            matrices[matrixIndex] = newMatrix;
+
+            CollisionManager.Instance.UpdateMatrix(id, newMatrix);
+            CollisionManager.Instance.UpdateCollider(id, pos, new Vector3(width, height, depth));
+
+            // Check collision with player
+            if (playerID != -1 && CollisionManager.Instance.CheckCollisionBetween(id, playerID))
+            {
+                Debug.Log("Player hit by enemy!");
+                // Add health/damage handling here
+            }
+        }
     }
 }
