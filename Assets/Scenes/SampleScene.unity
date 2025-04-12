@@ -482,6 +482,7 @@ MonoBehaviour:
   height: 1
   depth: 1
   movementSpeed: 5
+  playerHealth: 100
   gravity: 9.8
   jumpForce: 10
   fallMultiplier: 2
@@ -494,6 +495,15 @@ MonoBehaviour:
   groundY: -20
   groundWidth: 200
   groundDepth: 1
+  enemyCount: 4
+  enemySpeed: 2
+  enemyMovementRange: {x: -5, y: 5}
+  obstacleCount: 4
+  instakillObstacleCount: 2
+  obstacleSizeMin: 1
+  obstacleSizeMax: 3
+  goalSize: {x: 2, y: 2, z: 2}
+  goalPosition: {x: 50, y: -18, z: 0}
 --- !u!4 &1548962866
 Transform:
   m_ObjectHideFlags: 0
