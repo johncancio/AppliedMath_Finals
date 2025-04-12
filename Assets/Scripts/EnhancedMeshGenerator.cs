@@ -20,6 +20,9 @@ public class EnhancedMeshGenerator : MonoBehaviour
     public float depth = 1f;
     
     public float movementSpeed = 5f;
+    public int playerHealth = 100;
+    float damageCooldown = 1.0f; // 1 second cooldown between damage
+    float lastDamageTime = -Mathf.Infinity;
     public float gravity = 9.8f;
     
     private int playerID = -1;
@@ -438,6 +441,23 @@ public class EnhancedMeshGenerator : MonoBehaviour
         }
     }
 
+    void ApplyDamage(int amount)
+    {
+        if (Time.time - lastDamageTime < damageCooldown)
+            return; // Still in cooldown, ignore damage
+
+        playerHealth -= amount;
+        lastDamageTime = Time.time;
+
+        Debug.Log($"Player took {amount} damage! Remaining health: {playerHealth}");
+
+        if (playerHealth <= 0)
+        {
+            Debug.Log("Player is dead!");
+            // Add game over or respawn logic here
+        }
+    }
+
     void UpdateEnemies()
     {
         for (int i = 0; i < enemyIDs.Count; i++)
@@ -473,8 +493,7 @@ public class EnhancedMeshGenerator : MonoBehaviour
             // Check collision with player
             if (playerID != -1 && CollisionManager.Instance.CheckCollisionBetween(id, playerID))
             {
-                Debug.Log("Player hit by enemy!");
-                // Add health/damage handling here
+                ApplyDamage(10); // Damage amount
             }
         }
     }

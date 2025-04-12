@@ -482,8 +482,9 @@ MonoBehaviour:
   height: 1
   depth: 1
   movementSpeed: 5
+  playerHealth: 100
   gravity: 9.8
-  jumpForce: 5
+  jumpForce: 10
   fallMultiplier: 2
   cameraFollow: {fileID: 0}
   constantZPosition: 0
@@ -494,6 +495,9 @@ MonoBehaviour:
   groundY: -20
   groundWidth: 200
   groundDepth: 1
+  enemyCount: 10
+  enemySpeed: 2
+  enemyMovementRange: {x: -5, y: 5}
 --- !u!4 &1548962866
 Transform:
   m_ObjectHideFlags: 0
